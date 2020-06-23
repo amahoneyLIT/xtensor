@@ -94,3 +94,41 @@ like so:
     auto xr2 = eval(xt::random::rand<double>({10, 10}));
 
     // now xr(0, 0) == xr(0, 0) is true.
+
+variance arguments
+------------------
+
+When ``variance`` is passed an expression and an integer parameter, this latter
+is not the axis along which the variance must be computed, but the degree of freedom:
+
+.. code::
+
+    xt::xtensor<double, 2> a = {{1., 2., 3.}, {4., 5., 6.}};
+    std::cout << xt::variance(a, 1) << std::endl;
+    // Outputs 3.5
+
+If you want to specify an axis, you need to pass an initializer list:
+
+.. code::
+
+    xt::xtensor<double, 2> a = {{1., 2., 3.}, {4., 5., 6.}};
+    std::cout << xt::variance(a, {1}) << std::endl;
+    .. Outputs { 0.666667, 0.666667 }
+
+fixed_shape on Windows
+----------------------
+
+Builder functions such as ``empty`` or ``ones`` accept an initializer list
+as argument. If the elements of this list do not have the same type, a
+curious compilation error may occur on Windows:
+
+.. code::
+
+    size_t N = 10ull;
+    xt::xarray<int> ages = xt::empty<int>({N, 4ul});
+
+    // error: cannot convert argument 1 from 'initializer list'
+    // to 'const xt::fixed_shape<> &'
+
+To avoid this compiler bug (for which we don't have a workaround), ensure
+all the elements in the initializer list have the same type.

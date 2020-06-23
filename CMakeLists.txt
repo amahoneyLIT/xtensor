@@ -119,6 +119,7 @@ set(XTENSOR_HEADERS
     ${XTENSOR_INCLUDE_DIR}/xtensor/xarray.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xassign.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xaxis_iterator.hpp
+    ${XTENSOR_INCLUDE_DIR}/xtensor/xaxis_slice_iterator.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xbroadcast.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xbuffer_adaptor.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xbuilder.hpp
@@ -162,6 +163,7 @@ set(XTENSOR_HEADERS
     ${XTENSOR_INCLUDE_DIR}/xtensor/xrepeat.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xscalar.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xsemantic.hpp
+    ${XTENSOR_INCLUDE_DIR}/xtensor/xset_operation.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xshape.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xslice.hpp
     ${XTENSOR_INCLUDE_DIR}/xtensor/xsort.hpp
@@ -283,3 +285,40 @@ configure_file(${PROJECT_NAME}.pc.in
                 @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig/")
+
+# Write single include
+# ====================
+
+function(PREPEND var prefix)
+   set(listVar "")
+   foreach(f ${ARGN})
+      list(APPEND listVar "${prefix}${f}")
+   endforeach(f)
+   set(${var} "${listVar}" PARENT_SCOPE)
+endfunction()
+
+function(POSTFIX var postfix)
+   set(listVar "")
+   foreach(f ${ARGN})
+      list(APPEND listVar "${f}${postfix}")
+   endforeach(f)
+   set(${var} "${listVar}" PARENT_SCOPE)
+endfunction()
+
+set(XTENSOR_SINGLE_INCLUDE ${XTENSOR_HEADERS})
+string(REPLACE "${XTENSOR_INCLUDE_DIR}/" "" XTENSOR_SINGLE_INCLUDE "${XTENSOR_SINGLE_INCLUDE}")
+list(REMOVE_ITEM XTENSOR_SINGLE_INCLUDE
+    xtensor/xexpression_holder.hpp
+    xtensor/xjson.hpp
+    xtensor/xmime.hpp
+    xtensor/xnpy.hpp)
+
+PREPEND(XTENSOR_SINGLE_INCLUDE "#include <" ${XTENSOR_SINGLE_INCLUDE})
+POSTFIX(XTENSOR_SINGLE_INCLUDE ">" ${XTENSOR_SINGLE_INCLUDE})
+string(REPLACE ";" "\n" XTENSOR_SINGLE_INCLUDE "${XTENSOR_SINGLE_INCLUDE}")
+string(CONCAT XTENSOR_SINGLE_INCLUDE "#ifndef XTENSOR\n" "#define XTENSOR\n\n" "${XTENSOR_SINGLE_INCLUDE}" "\n\n#endif\n")
+
+file(WRITE "${CMAKE_BINARY_DIR}/xtensor.hpp" "${XTENSOR_SINGLE_INCLUDE}")
+
+install(FILES "${CMAKE_BINARY_DIR}/xtensor.hpp"
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

@@ -34,12 +34,12 @@ jobs:
       # Create conda enviroment
       # Note: conda activate doesn't work here, because it creates a new shell!
       - script: |
-          conda install cmake ^
+          conda install cmake==3.14.0 ^
                         gtest==1.10.0 ^
                         ninja ^
                         nlohmann_json ^
                         xtl==0.6.12 ^
-                        xsimd==7.4.6 ^
+                        xsimd==7.4.8 ^
                         python=3.6
           conda list
         displayName: "Install conda packages"
